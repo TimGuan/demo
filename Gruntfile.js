@@ -250,6 +250,9 @@ module.exports = function(grunt) {
                 flow: {
                     html: {
                         steps: {
+                            // Here you define your flow for your custom block - only concat 
+                            // angular中诸多保留变量无法被替换，顾不采用压缩
+                            myjs: ['concat'],
                             js: ['concat', 'uglifyjs'],
                             css: ['cssmin']
                         },
@@ -274,6 +277,13 @@ module.exports = function(grunt) {
                     js: [
                         [/(img\/[^''""]*\.(png|jpg|jpeg|gif|webp|svg))/g, 'Replacing references to images']
                     ]
+                },
+                blockReplacements: {
+                    // our 'replacement block'
+                    myjs: function(block) {
+                            return '<script src="' + block.dest + '"></script>';
+                    }
+                    // no need to redefine default blocks
                 }
             }
         },
@@ -292,13 +302,25 @@ module.exports = function(grunt) {
         //   }
         // },
         // uglify: {
-        //   dist: {
-        //     files: {
-        //       '<%= yeoman.dist %>/js/base.js': [
-        //         '<%= yeoman.dist %>/js/base.js'
-        //       ]
+        //     // buildall: {
+        //     //     files: [{
+        //     //         expand: true,
+        //     //         cwd: '<%= yeoman.app %>/js/controllers', //js目录下
+        //     //         src: '**/*.js', //所有js文件
+        //     //         dest: '<%= yeoman.dist %>/js/controllers' //输出到此目录下
+        //     //     }, {
+        //     //         expand: true,
+        //     //         cwd: '<%= yeoman.app %>/bower_components', //js目录下
+        //     //         src: '**/*.js', //所有js文件
+        //     //         dest: '<%= yeoman.dist %>/lib' //输出到此目录下
+        //     //     }]
+        //     // },
+        //     options: {
+        //         beautify: false,
+        //         mangle: {
+        //             except: ['angular', '$scope', '$location', '$http', '$timeout', '$$config', '$$util', '$$ui', '$$viewInitModel', '$ionicPlatform', '$stateProvider', '$urlRouterProvider', '$controllerProvider', '$ionicLoading', '$ionicPopup', '$q', '$state', '$stateParams', '$ionicScrollDelegate', '$compileProvider', '$ionicActionSheet', '$ionicHistory', '$ionicNavBarDelegate', '$interval', '$rootScope', '$$localstorage', '$ionicSlideBoxDelegate', '$cordovaToast', '$cordovaImagePicker', '$cordovaAppVersion', '$provide', '$browser', '$delegate', '$window', '$$globalValue']
+        //         }
         //     }
-        //   }
         // },
         // concat: {
         //   dist: {}
@@ -337,7 +359,7 @@ module.exports = function(grunt) {
                 files: [{
                     expand: true,
                     cwd: '<%= yeoman.dist %>',
-                    src: ['*.html'],
+                    src: ['*.html', 'views/{,*/}*.html'],
                     dest: '<%= yeoman.dist %>'
                 }]
             }
@@ -390,7 +412,8 @@ module.exports = function(grunt) {
                         '*.html',
                         'views/{,*/}*.html',
                         'img/**',
-                        'fonts/{,*/,*/*/,*/*/*/}*.*'
+                        'js/{,*/,*/*/,*/*/*/}*.*',
+                        'css/{,*/,*/*/,*/*/*/}*.*'
                     ]
                 }, {
                     expand: true,
@@ -404,23 +427,8 @@ module.exports = function(grunt) {
                     dest: '<%= yeoman.dist %>'
                 }, {
                     expand: true,
-                    cwd: '<%= yeoman.app %>',
-                    src: 'js/{,*/,*/*/,*/*/*/}*.*',
-                    dest: '<%= yeoman.dist %>'
-                }, {
-                    expand: true,
-                    cwd: '<%= yeoman.app %>',
-                    src: 'css/{,*/,*/*/,*/*/*/}*.*',
-                    dest: '<%= yeoman.dist %>'
-                }, {
-                    expand: true,
-                    cwd: '.tmp/concat',
-                    src: 'js/*.js',
-                    dest: '<%= yeoman.dist %>'
-                }, {
-                    expand: true,
-                    cwd: '.tmp/concat',
-                    src: 'css/*.css',
+                    cwd: 'bower_components/font-awesome',
+                    src: 'fonts/{,*/,*/*/,*/*/*/}*.*',
                     dest: '<%= yeoman.dist %>'
                 }]
             },
@@ -495,12 +503,12 @@ module.exports = function(grunt) {
         'concat', //concat index.html中定义的规则进行
         // 'ngAnnotate', //注解处理
         'copy:dist', //拷贝
-        // // 'cdnify',//使用google cdn托管静态资源
-        // 'cssmin'
-        // // 'uglify',
+        // 'cdnify',//使用google cdn托管静态资源
+        'cssmin',
+        'uglify',
         // 'filerev',
-        'usemin',//引用替换成压缩有地址
-        'htmlmin'//压缩html
+        'usemin', //引用替换成压缩有地址
+        'htmlmin' //压缩html
     ]);
 
     grunt.registerTask('default', [
